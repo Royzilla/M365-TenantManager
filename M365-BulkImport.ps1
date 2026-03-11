@@ -153,10 +153,10 @@ Add-Type -AssemblyName System.Windows.Forms
                 <CheckBox x:Name="chkForcePasswordChange" Style="{StaticResource ModernCheckBox}" 
                          Content="Force password change at next sign-in" IsChecked="True"/>
                 
-                <CheckBox x:Name="chkAssignLicense" Style="{StaticResource ModernCheckBox}" 
-                         Content="Assign Microsoft 365 license">
-                    <StackPanel Margin="20,5,0,0" IsEnabled="{Binding ElementName=chkAssignLicense, Path=IsChecked}">
-                        <ComboBox x:Name="cmbLicense" Width="300" Style="{StaticResource ModernComboBox}">
+                <CheckBox x:Name="chkAssignLicense" Style="{StaticResource ModernCheckBox}" IsChecked="False">
+                    <StackPanel>
+                        <TextBlock Text="Assign Microsoft 365 license" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbLicense" Width="300" Style="{StaticResource ModernComboBox}" IsEnabled="{Binding ElementName=chkAssignLicense, Path=IsChecked}">
                             <ComboBoxItem Content="Microsoft 365 Business Basic"/>
                             <ComboBoxItem Content="Microsoft 365 Business Standard"/>
                             <ComboBoxItem Content="Microsoft 365 Business Premium"/>
