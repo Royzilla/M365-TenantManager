@@ -1,10 +1,10 @@
 <#
 .SYNOPSIS
-    M365 Bulk User Import - Import users from Excel to Azure AD
+    M365 Bulk User Import - Import users from Excel to Azure AD with validation
 
 .DESCRIPTION
-    Simple PowerShell GUI tool for bulk importing users to Microsoft 365
-    via Microsoft Graph API from Excel files.
+    PowerShell GUI tool for bulk importing users to Microsoft 365 with
+    comprehensive validation, duplicate checking, and detailed reporting.
 
 .EXAMPLE
     .\M365-BulkImport.ps1
@@ -26,7 +26,7 @@ Add-Type -AssemblyName System.Windows.Forms
 [xml]$XAML = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="M365 Bulk User Import" Height="700" Width="900"
+        Title="M365 Bulk User Import" Height="800" Width="1000"
         WindowStartupLocation="CenterScreen"
         Background="#FF1E1E1E"
         Foreground="White"
@@ -134,6 +134,7 @@ Add-Type -AssemblyName System.Windows.Forms
                 <StackPanel Orientation="Horizontal">
                     <TextBox x:Name="txtFilePath" Width="550" Style="{StaticResource ModernTextBox}" IsReadOnly="True"/>
                     <Button x:Name="btnBrowse" Style="{StaticResource ModernButton}" Content="Browse..." Margin="10,0,0,0" Width="100"/>
+                    <Button x:Name="btnDownloadTemplate" Style="{StaticResource ModernButton}" Content="Download Template" Margin="10,0,0,0" Width="130" Background="#FF6C6C6C"/>
                 </StackPanel>
             </StackPanel>
         </Border>
@@ -142,6 +143,12 @@ Add-Type -AssemblyName System.Windows.Forms
         <Border Grid.Row="3" Style="{StaticResource CardBorder}">
             <StackPanel>
                 <TextBlock Text="2. Import Options" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                
+                <CheckBox x:Name="chkValidateData" Style="{StaticResource ModernCheckBox}" 
+                         Content="Validate data before import (recommended)" IsChecked="True"/>
+                
+                <CheckBox x:Name="chkCheckExisting" Style="{StaticResource ModernCheckBox}" 
+                         Content="Check if users already exist" IsChecked="True"/>
                 
                 <CheckBox x:Name="chkForcePasswordChange" Style="{StaticResource ModernCheckBox}" 
                          Content="Force password change at next sign-in" IsChecked="True"/>
@@ -166,11 +173,25 @@ Add-Type -AssemblyName System.Windows.Forms
         
         <!-- Results -->
         <Border Grid.Row="4" Style="{StaticResource CardBorder}" MaxHeight="200">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <TextBox x:Name="txtResults" Background="Transparent" Foreground="White" 
-                        BorderThickness="0" IsReadOnly="True" FontFamily="Consolas" 
-                        TextWrapping="Wrap" AcceptsReturn="True"/>
-            </ScrollViewer>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                    <TextBlock Text="Results" FontSize="14" FontWeight="SemiBold" Foreground="White"/>
+                    <Button x:Name="btnSaveLog" Content="Save Log" Margin="10,0,0,0" Padding="10,3"/>
+                    <Button x:Name="btnExportResults" Content="Export Results" Margin="10,0,0,0" Padding="10,3"/>
+                    <Button x:Name="btnClear" Content="Clear" Margin="10,0,0,0" Padding="10,3"/>
+                </StackPanel>
+                
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <TextBox x:Name="txtResults" Background="Transparent" Foreground="White" 
+                            BorderThickness="0" IsReadOnly="True" FontFamily="Consolas" 
+                            TextWrapping="Wrap" AcceptsReturn="True"/>
+                </ScrollViewer>
+            </Grid>
         </Border>
         
         <!-- Progress -->
@@ -181,7 +202,10 @@ Add-Type -AssemblyName System.Windows.Forms
         
         <!-- Action Buttons -->
         <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,40,0,0">
+            <Button x:Name="btnValidate" Style="{StaticResource ModernButton}" Content="Validate Data" Width="120" Margin="0,0,10,0"/>
+            
             <Button x:Name="btnPreview" Style="{StaticResource ModernButton}" Content="Preview Data" Width="120" Margin="0,0,10,0"/>
+            
             <Button x:Name="btnImport" Style="{StaticResource ModernButton}" Content="Import Users" Width="120" Background="#FF107C10"/>
         </StackPanel>
     </Grid>
@@ -244,8 +268,131 @@ function Update-Status {
     }
 }
 
+function Test-EmailFormat {
+    param([string]$Email)
+    return $Email -match '^[\w\.-]+@[\w\.-]+\.\w+$'
+}
+
+function Test-PasswordStrength {
+    param([string]$Password)
+    
+    $score = 0
+    if ($Password.Length -ge 8) { $score++ }
+    if ($Password -match '[A-Z]') { $score++ }
+    if ($Password -match '[a-z]') { $score++ }
+    if ($Password -match '\d') { $score++ }
+    if ($Password -match '[!@#$%^&*(),.?":{}|<>]') { $score++ }
+    
+    return $score -ge 3
+}
+
+function Validate-UserData {
+    param($Users, $Ui, [bool]$CheckExisting)
+    
+    $results = @()
+    $validCount = 0
+    $errorCount = 0
+    
+    $Ui.TxtResults.Text = "Validating data..."
+    $Ui.ProgressBar.Maximum = $Users.Count
+    $Ui.ProgressBar.Value = 0
+    
+    # Get existing users if needed
+    $existingUsers = @()
+    if ($CheckExisting -and $script:Connected) {
+        $Ui.TxtResults.Text += "`nLoading existing users from Azure AD..."
+        $existingUsers = Get-MgUser -All | Select-Object -ExpandProperty UserPrincipalName
+    }
+    
+    for ($i = 0; $i -lt $Users.Count; $i++) {
+        $user = $Users[$i]
+        $lineNum = $i + 2  # Excel row number (header + 1-based)
+        $errors = @()
+        $warnings = @()
+        
+        # Required fields
+        if ([string]::IsNullOrWhiteSpace($user.DisplayName)) {
+            $errors += "Missing DisplayName"
+        }
+        if ([string]::IsNullOrWhiteSpace($user.UserPrincipalName)) {
+            $errors += "Missing UserPrincipalName"
+        }
+        if ([string]::IsNullOrWhiteSpace($user.MailNickname)) {
+            $errors += "Missing MailNickname"
+        }
+        if ([string]::IsNullOrWhiteSpace($user.Password)) {
+            $errors += "Missing Password"
+        }
+        
+        # Email format validation
+        if ($user.UserPrincipalName -and -not (Test-EmailFormat $user.UserPrincipalName)) {
+            $errors += "Invalid email format: $($user.UserPrincipalName)"
+        }
+        
+        # Password strength
+        if ($user.Password -and -not (Test-PasswordStrength $user.Password)) {
+            $warnings += "Weak password (use 8+ chars with mixed case, numbers, symbols)"
+        }
+        
+        # Check for duplicates in the Excel file
+        $duplicateUPN = $Users | Where-Object { $_.UserPrincipalName -eq $user.UserPrincipalName }
+        if ($duplicateUPN.Count -gt 1) {
+            $errors += "Duplicate UserPrincipalName in Excel file"
+        }
+        
+        # Check if user already exists in Azure AD
+        if ($CheckExisting -and $existingUsers -contains $user.UserPrincipalName) {
+            $errors += "User already exists in Azure AD"
+        }
+        
+        # Build result
+        if ($errors.Count -gt 0) {
+            $results += "Row $lineNum : $($user.DisplayName) [$($user.UserPrincipalName)]"
+            $results += "   ERRORS: $($errors -join ', ')"
+            if ($warnings.Count -gt 0) {
+                $results += "   WARNINGS: $($warnings -join ', ')"
+            }
+            $results += ""
+            $errorCount++
+        }
+        elseif ($warnings.Count -gt 0) {
+            $results += "Row $lineNum : $($user.DisplayName) [$($user.UserPrincipalName)]"
+            $results += "   WARNINGS: $($warnings -join ', ')"
+            $results += ""
+            $validCount++
+        }
+        else {
+            $validCount++
+        }
+        
+        $Ui.ProgressBar.Value = $i + 1
+        $Ui.TxtProgress.Text = "Validating: $($i + 1) of $($Users.Count)"
+        [System.Windows.Forms.Application]::DoEvents()
+    }
+    
+    $Ui.TxtProgress.Text = "Validation Complete"
+    
+    $summary = @"
+================================
+VALIDATION SUMMARY
+================================
+Total: $($Users.Count)
+Valid: $validCount
+Errors: $errorCount
+================================
+
+"@
+    
+    if ($results.Count -gt 0) {
+        return $summary + ($results -join "`n")
+    }
+    else {
+        return $summary + "All users passed validation!"
+    }
+}
+
 function Import-UsersFromExcel {
-    param($Ui, [bool]$DryRun)
+    param($Ui, [bool]$DryRun, [bool]$ValidateFirst)
     
     if (-not $script:Connected) {
         [System.Windows.MessageBox]::Show("Please connect to Microsoft 365 first.", "Not Connected", "OK", "Warning")
@@ -253,8 +400,19 @@ function Import-UsersFromExcel {
     }
     
     if (-not $script:ImportData) {
-        [System.Windows.MessageBox]::Show("Please select and preview an Excel file first.", "No Data", "OK", "Warning")
+        [System.Windows.MessageBox]::Show("Please select and validate an Excel file first.", "No Data", "OK", "Warning")
         return
+    }
+    
+    # Run validation first if requested
+    if ($ValidateFirst) {
+        $validationResult = Validate-UserData -Users $script:ImportData -Ui $Ui -CheckExisting $Ui.ChkCheckExisting.IsChecked
+        $Ui.TxtResults.Text = $validationResult
+        
+        if ($validationResult -match "ERRORS") {
+            $continue = [System.Windows.MessageBox]::Show("Validation found errors. Continue anyway?", "Validation Errors", "YesNo", "Warning")
+            if ($continue -ne "Yes") { return }
+        }
     }
     
     $forcePasswordChange = $Ui.ChkForcePasswordChange.IsChecked
@@ -273,16 +431,28 @@ function Import-UsersFromExcel {
     $successCount = 0
     $failCount = 0
     $results = @()
+    $script:ImportLog = @()
     
     $Ui.ProgressBar.Maximum = $script:ImportData.Count
     $Ui.ProgressBar.Value = 0
     
     foreach ($user in $script:ImportData) {
+        $logEntry = @{
+            Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+            DisplayName = $user.DisplayName
+            UserPrincipalName = $user.UserPrincipalName
+            Status = ""
+            Message = ""
+        }
+        
         try {
             $Ui.TxtProgress.Text = "Processing $($successCount + $failCount + 1) of $($script:ImportData.Count)"
             
             if ($DryRun) {
-                $results += "[DRY RUN] Would create: $($user.DisplayName) ($($user.UserPrincipalName))"
+                $msg = "[DRY RUN] Would create: $($user.DisplayName) ($($user.UserPrincipalName))"
+                $results += $msg
+                $logEntry.Status = "DRY_RUN"
+                $logEntry.Message = $msg
                 $successCount++
             }
             else {
@@ -345,15 +515,22 @@ function Import-UsersFromExcel {
                     }
                 }
                 
-                $results += "Created: $($user.DisplayName) ($($user.UserPrincipalName))"
+                $msg = "Created: $($user.DisplayName) ($($user.UserPrincipalName))"
+                $results += $msg
+                $logEntry.Status = "SUCCESS"
+                $logEntry.Message = $msg
                 $successCount++
             }
         }
         catch {
-            $results += "FAILED: $($user.DisplayName) - $($_.Exception.Message)"
+            $msg = "FAILED: $($user.DisplayName) - $($_.Exception.Message)"
+            $results += $msg
+            $logEntry.Status = "FAILED"
+            $logEntry.Message = $_.Exception.Message
             $failCount++
         }
         
+        $script:ImportLog += $logEntry
         $Ui.ProgressBar.Value++
         $Ui.TxtResults.Text = $results -join "`n"
         [System.Windows.Forms.Application]::DoEvents()
@@ -364,12 +541,69 @@ function Import-UsersFromExcel {
     [System.Windows.MessageBox]::Show("Import complete!`n`nSuccessful: $successCount`nFailed: $failCount", "Done", "OK", $icon2)
 }
 
+function Export-Template {
+    $saveDialog = New-Object System.Windows.Forms.SaveFileDialog
+    $saveDialog.Filter = "Excel files (*.xlsx)|*.xlsx"
+    $saveDialog.FileName = "M365-Import-Template.xlsx"
+    $saveDialog.InitialDirectory = [Environment]::GetFolderPath("Desktop")
+    
+    if ($saveDialog.ShowDialog() -eq "OK") {
+        $template = @(
+            [PSCustomObject]@{
+                DisplayName = "John Doe"
+                UserPrincipalName = "john.doe@company.com"
+                MailNickname = "johndoe"
+                GivenName = "John"
+                Surname = "Doe"
+                JobTitle = "IT Administrator"
+                Department = "IT"
+                OfficeLocation = "Amsterdam"
+                MobilePhone = "+31-6-12345678"
+                BusinessPhones = "+31-20-1234567"
+                StreetAddress = "Hoofdstraat 123"
+                City = "Amsterdam"
+                State = "Noord-Holland"
+                PostalCode = "1000 AA"
+                Country = "Nederland"
+                UsageLocation = "NL"
+                Password = "Welcome2024!"
+                Groups = "IT Team;All Employees"
+            },
+            [PSCustomObject]@{
+                DisplayName = "Jane Smith"
+                UserPrincipalName = "jane.smith@company.com"
+                MailNickname = "janesmith"
+                GivenName = "Jane"
+                Surname = "Smith"
+                JobTitle = "HR Manager"
+                Department = "HR"
+                OfficeLocation = "Rotterdam"
+                MobilePhone = "+31-6-87654321"
+                BusinessPhones = "+31-10-7654321"
+                StreetAddress = "Stationplein 45"
+                City = "Rotterdam"
+                State = "Zuid-Holland"
+                PostalCode = "3013 AK"
+                Country = "Nederland"
+                UsageLocation = "NL"
+                Password = "Welcome2024!"
+                Groups = "HR Team;All Employees"
+            }
+        )
+        
+        $template | Export-Excel -Path $saveDialog.FileName -AutoSize -TableName "Users"
+        [System.Windows.MessageBox]::Show("Template saved to:`n$($saveDialog.FileName)", "Template Created", "OK", "Information")
+    }
+}
+
 #endregion
 
 #region Main
 
 $script:Connected = $false
 $script:ImportData = $null
+$script:ImportLog = @()
+$script:FilePath = $null
 
 $Reader = New-Object System.Xml.XmlNodeReader $XAML
 $Window = [Windows.Markup.XamlReader]::Load($Reader)
@@ -383,13 +617,20 @@ $Ui = @{
     BtnConnect = $Window.FindName("btnConnect")
     TxtFilePath = $Window.FindName("txtFilePath")
     BtnBrowse = $Window.FindName("btnBrowse")
+    BtnDownloadTemplate = $Window.FindName("btnDownloadTemplate")
+    ChkValidateData = $Window.FindName("chkValidateData")
+    ChkCheckExisting = $Window.FindName("chkCheckExisting")
     ChkForcePasswordChange = $Window.FindName("chkForcePasswordChange")
     ChkAssignLicense = $Window.FindName("chkAssignLicense")
     CmbLicense = $Window.FindName("cmbLicense")
     ChkDryRun = $Window.FindName("chkDryRun")
     TxtResults = $Window.FindName("txtResults")
+    BtnSaveLog = $Window.FindName("btnSaveLog")
+    BtnExportResults = $Window.FindName("btnExportResults")
+    BtnClear = $Window.FindName("btnClear")
     ProgressBar = $Window.FindName("progressBar")
     TxtProgress = $Window.FindName("txtProgress")
+    BtnValidate = $Window.FindName("btnValidate")
     BtnPreview = $Window.FindName("btnPreview")
     BtnImport = $Window.FindName("btnImport")
 }
@@ -405,32 +646,88 @@ $Ui.BtnBrowse.Add_Click({
     if ($dialog.ShowDialog() -eq "OK") {
         $Ui.TxtFilePath.Text = $dialog.FileName
         $script:FilePath = $dialog.FileName
+        
+        # Auto load data
+        try {
+            $script:ImportData = Import-Excel -Path $script:FilePath
+            $Ui.TxtResults.Text = "Loaded $($script:ImportData.Count) users from file.`nClick 'Validate Data' to check for errors."
+        }
+        catch {
+            [System.Windows.MessageBox]::Show("Failed to load file: $_", "Error", "OK", "Error")
+        }
     }
 })
 
-$Ui.BtnPreview.Add_Click({
-    if (-not $script:FilePath) {
-        [System.Windows.MessageBox]::Show("Please select a file first.", "No File", "OK", "Warning")
+$Ui.BtnDownloadTemplate.Add_Click({ Export-Template })
+
+$Ui.BtnValidate.Add_Click({
+    if (-not $script:ImportData) {
+        [System.Windows.MessageBox]::Show("Please select an Excel file first.", "No Data", "OK", "Warning")
         return
     }
     
-    try {
-        $script:ImportData = Import-Excel -Path $script:FilePath
-        $Ui.TxtResults.Text = "Preview loaded:`n`nFound $($script:ImportData.Count) users:`n"
-        foreach ($user in $script:ImportData | Select-Object -First 5) {
-            $Ui.TxtResults.Text += "`n• $($user.DisplayName) ($($user.UserPrincipalName))"
-        }
-        if ($script:ImportData.Count -gt 5) {
-            $Ui.TxtResults.Text += "`n... and $($script:ImportData.Count - 5) more"
-        }
+    $validationResult = Validate-UserData -Users $script:ImportData -Ui $Ui -CheckExisting $Ui.ChkCheckExisting.IsChecked
+    $Ui.TxtResults.Text = $validationResult
+})
+
+$Ui.BtnPreview.Add_Click({
+    if (-not $script:ImportData) {
+        [System.Windows.MessageBox]::Show("Please select an Excel file first.", "No Data", "OK", "Warning")
+        return
     }
-    catch {
-        [System.Windows.MessageBox]::Show("Failed to load file: $_", "Error", "OK", "Error")
+    
+    $Ui.TxtResults.Text = "Preview of users to import:`n`n"
+    foreach ($user in $script:ImportData | Select-Object -First 10) {
+        $Ui.TxtResults.Text += "• $($user.DisplayName) [$($user.UserPrincipalName)] - $($user.Department)`n"
+    }
+    if ($script:ImportData.Count -gt 10) {
+        $Ui.TxtResults.Text += "`n... and $($script:ImportData.Count - 10) more users"
     }
 })
 
 $Ui.BtnImport.Add_Click({
-    Import-UsersFromExcel -Ui $Ui -DryRun $Ui.ChkDryRun.IsChecked
+    Import-UsersFromExcel -Ui $Ui -DryRun $Ui.ChkDryRun.IsChecked -ValidateFirst $Ui.ChkValidateData.IsChecked
+})
+
+$Ui.BtnSaveLog.Add_Click({
+    if ($script:ImportLog.Count -eq 0) {
+        [System.Windows.MessageBox]::Show("No import log to save.", "No Data", "OK", "Warning")
+        return
+    }
+    
+    $saveDialog = New-Object System.Windows.Forms.SaveFileDialog
+    $saveDialog.Filter = "CSV files (*.csv)|*.csv"
+    $saveDialog.FileName = "Import-Log-$(Get-Date -Format 'yyyyMMdd-HHmmss').csv"
+    $saveDialog.InitialDirectory = [Environment]::GetFolderPath("Desktop")
+    
+    if ($saveDialog.ShowDialog() -eq "OK") {
+        $script:ImportLog | Export-Csv -Path $saveDialog.FileName -NoTypeInformation
+        [System.Windows.MessageBox]::Show("Log saved to:`n$($saveDialog.FileName)", "Log Saved", "OK", "Information")
+    }
+})
+
+$Ui.BtnExportResults.Add_Click({
+    $text = $Ui.TxtResults.Text
+    if ([string]::IsNullOrWhiteSpace($text)) {
+        [System.Windows.MessageBox]::Show("No results to export.", "No Data", "OK", "Warning")
+        return
+    }
+    
+    $saveDialog = New-Object System.Windows.Forms.SaveFileDialog
+    $saveDialog.Filter = "Text files (*.txt)|*.txt"
+    $saveDialog.FileName = "Import-Results-$(Get-Date -Format 'yyyyMMdd-HHmmss').txt"
+    $saveDialog.InitialDirectory = [Environment]::GetFolderPath("Desktop")
+    
+    if ($saveDialog.ShowDialog() -eq "OK") {
+        $text | Out-File -FilePath $saveDialog.FileName
+        [System.Windows.MessageBox]::Show("Results saved to:`n$($saveDialog.FileName)", "Results Saved", "OK", "Information")
+    }
+})
+
+$Ui.BtnClear.Add_Click({
+    $Ui.TxtResults.Text = ""
+    $Ui.ProgressBar.Value = 0
+    $Ui.TxtProgress.Text = ""
 })
 
 # Show Window
