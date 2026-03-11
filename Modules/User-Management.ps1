@@ -45,48 +45,48 @@ function Show-UserManagementView {
     
     # Create user management view
     [xml]$userXaml = @"
-&lt;Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;
-    &lt;Grid.RowDefinitions&gt;
-        &lt;RowDefinition Height="Auto"/&gt;
-        &lt;RowDefinition Height="Auto"/&gt;
-        &lt;RowDefinition Height="*"/&gt;
-    &lt;/Grid.RowDefinitions&gt;
+<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
     
-    &lt;WrapPanel Grid.Row="0" Margin="0,0,0,15"&gt;
-        &lt;Button x:Name="btnBulkImport" Style="{StaticResource ModernButton}" Content="📊 Bulk Import from Excel" Margin="0,0,10,0"/&gt;
-        &lt;Button x:Name="btnNewUser" Style="{StaticResource ModernButton}" Content="➕ Create New User" Margin="0,0,10,0"/&gt;
-        &lt;Button x:Name="btnExportUsers" Style="{StaticResource ModernButton}" Content="📤 Export to Excel"/&gt;
-    &lt;/WrapPanel&gt;
+    <WrapPanel Grid.Row="0" Margin="0,0,0,15">
+        <Button x:Name="btnBulkImport" Style="{StaticResource ModernButton}" Content="📊 Bulk Import from Excel" Margin="0,0,10,0"/>
+        <Button x:Name="btnNewUser" Style="{StaticResource ModernButton}" Content="➕ Create New User" Margin="0,0,10,0"/>
+        <Button x:Name="btnExportUsers" Style="{StaticResource ModernButton}" Content="📤 Export to Excel"/>
+    </WrapPanel>
     
-    &lt;Border Grid.Row="1" Style="{StaticResource CardBorder}" Padding="10"&gt;
-        &lt;StackPanel Orientation="Horizontal"&gt;
-            &lt;TextBox x:Name="txtSearch" Width="300" Style="{StaticResource ModernTextBox}" Margin="0,0,10,0"
-                    Text="Search users..."/&gt;
-            &lt;ComboBox x:Name="cmbFilter" Width="150" Style="{StaticResource ModernComboBox}" Margin="0,0,10,0"&gt;
-                &lt;ComboBoxItem Content="All Users" IsSelected="True"/&gt;
-                &lt;ComboBoxItem Content="Active Users"/&gt;
-                &lt;ComboBoxItem Content="Guest Users"/&gt;
-            &lt;/ComboBox&gt;
-            &lt;Button x:Name="btnSearch" Style="{StaticResource ModernButton}" Content="🔍 Search"/&gt;
-        &lt;/StackPanel&gt;
-    &lt;/Border&gt;
+    <Border Grid.Row="1" Style="{StaticResource CardBorder}" Padding="10">
+        <StackPanel Orientation="Horizontal">
+            <TextBox x:Name="txtSearch" Width="300" Style="{StaticResource ModernTextBox}" Margin="0,0,10,0"
+                    Text="Search users..."/>
+            <ComboBox x:Name="cmbFilter" Width="150" Style="{StaticResource ModernComboBox}" Margin="0,0,10,0">
+                <ComboBoxItem Content="All Users" IsSelected="True"/>
+                <ComboBoxItem Content="Active Users"/>
+                <ComboBoxItem Content="Guest Users"/>
+            </ComboBox>
+            <Button x:Name="btnSearch" Style="{StaticResource ModernButton}" Content="🔍 Search"/>
+        </StackPanel>
+    </Border>
     
-    &lt;Border Grid.Row="2" Style="{StaticResource CardBorder}"&gt;
-        &lt;DataGrid x:Name="dgUsers" AutoGenerateColumns="False" IsReadOnly="True"
+    <Border Grid.Row="2" Style="{StaticResource CardBorder}">
+        <DataGrid x:Name="dgUsers" AutoGenerateColumns="False" IsReadOnly="True"
                  GridLinesVisibility="Horizontal" Background="Transparent"
-                 RowBackground="&#35;FF2D2D30" AlternatingRowBackground="&#35;FF252526"
+                 RowBackground="#FF2D2D30" AlternatingRowBackground="#FF252526"
                  Foreground="White" BorderThickness="0"
-                 HeadersVisibility="Column" CanUserAddRows="False"&gt;
-            &lt;DataGrid.Columns&gt;
-                &lt;DataGridTextColumn Header="Display Name" Binding="{Binding DisplayName}" Width="*"/&gt;
-                &lt;DataGridTextColumn Header="Email" Binding="{Binding UserPrincipalName}" Width="*"/&gt;
-                &lt;DataGridTextColumn Header="Department" Binding="{Binding Department}" Width="150"/&gt;
-                &lt;DataGridTextColumn Header="Job Title" Binding="{Binding JobTitle}" Width="150"/&gt;
-                &lt;DataGridCheckBoxColumn Header="Active" Binding="{Binding AccountEnabled}" Width="70"/&gt;
-            &lt;/DataGrid.Columns&gt;
-        &lt;/DataGrid&gt;
-    &lt;/Border&gt;
-&lt;/Grid&gt;
+                 HeadersVisibility="Column" CanUserAddRows="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Display Name" Binding="{Binding DisplayName}" Width="*"/>
+                <DataGridTextColumn Header="Email" Binding="{Binding UserPrincipalName}" Width="*"/>
+                <DataGridTextColumn Header="Department" Binding="{Binding Department}" Width="150"/>
+                <DataGridTextColumn Header="Job Title" Binding="{Binding JobTitle}" Width="150"/>
+                <DataGridCheckBoxColumn Header="Active" Binding="{Binding AccountEnabled}" Width="70"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Border>
+</Grid>
 "@
     
     $reader = New-Object System.Xml.XmlNodeReader $userXaml
@@ -113,71 +113,71 @@ function Show-BulkImportView {
     if (-not (Assert-GraphConnection)) { return }
     
     [xml]$bulkXaml = @"
-&lt;Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;
-    &lt;Grid.RowDefinitions&gt;
-        &lt;RowDefinition Height="Auto"/&gt;
-        &lt;RowDefinition Height="Auto"/&gt;
-        &lt;RowDefinition Height="*"/&gt;
-        &lt;RowDefinition Height="Auto"/&gt;
-    &lt;/Grid.RowDefinitions&gt;
+<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
     
-    &lt;Border Grid.Row="0" Style="{StaticResource CardBorder}"&gt;
-        &lt;StackPanel&gt;
-            &lt;TextBlock Text="1. Select Excel File" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/&gt;
-            &lt;StackPanel Orientation="Horizontal"&gt;
-                &lt;TextBox x:Name="txtFilePath" Width="400" Style="{StaticResource ModernTextBox}" IsReadOnly="True"/&gt;
-                &lt;Button x:Name="btnBrowse" Style="{StaticResource ModernButton}" Content="Browse..." Margin="10,0,0,0"/&gt;
-            &lt;/StackPanel&gt;
-        &lt;/StackPanel&gt;
-    &lt;/Border&gt;
+    <Border Grid.Row="0" Style="{StaticResource CardBorder}">
+        <StackPanel>
+            <TextBlock Text="1. Select Excel File" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBox x:Name="txtFilePath" Width="400" Style="{StaticResource ModernTextBox}" IsReadOnly="True"/>
+                <Button x:Name="btnBrowse" Style="{StaticResource ModernButton}" Content="Browse..." Margin="10,0,0,0"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
     
-    &lt;Border Grid.Row="1" Style="{StaticResource CardBorder}"&gt;
-        &lt;StackPanel&gt;
-            &lt;TextBlock Text="2. Import Options" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/&gt;
+    <Border Grid.Row="1" Style="{StaticResource CardBorder}">
+        <StackPanel>
+            <TextBlock Text="2. Import Options" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
             
-            &lt;CheckBox x:Name="chkForcePasswordChange" Style="{StaticResource ModernCheckBox}" 
-                     Content="Force password change at next sign-in" IsChecked="True"/&gt;
+            <CheckBox x:Name="chkForcePasswordChange" Style="{StaticResource ModernCheckBox}" 
+                     Content="Force password change at next sign-in" IsChecked="True"/>
             
-            &lt;CheckBox x:Name="chkAssignLicense" Style="{StaticResource ModernCheckBox}" 
-                     Content="Assign Microsoft 365 license"&gt;
-                &lt;StackPanel Margin="20,5,0,0" IsEnabled="{Binding ElementName=chkAssignLicense, Path=IsChecked}"&gt;
-                    &lt;ComboBox x:Name="cmbLicense" Width="300" Style="{StaticResource ModernComboBox}"&gt;
-                        &lt;ComboBoxItem Content="Microsoft 365 Business Basic"/&gt;
-                        &lt;ComboBoxItem Content="Microsoft 365 Business Standard"/&gt;
-                        &lt;ComboBoxItem Content="Microsoft 365 Business Premium"/&gt;
-                        &lt;ComboBoxItem Content="Office 365 E3"/&gt;
-                        &lt;ComboBoxItem Content="Office 365 E5"/&gt;
-                    &lt;/ComboBox&gt;
-                &lt;/StackPanel&gt;
-            &lt;/CheckBox&gt;
+            <CheckBox x:Name="chkAssignLicense" Style="{StaticResource ModernCheckBox}" 
+                     Content="Assign Microsoft 365 license">
+                <StackPanel Margin="20,5,0,0" IsEnabled="{Binding ElementName=chkAssignLicense, Path=IsChecked}">
+                    <ComboBox x:Name="cmbLicense" Width="300" Style="{StaticResource ModernComboBox}">
+                        <ComboBoxItem Content="Microsoft 365 Business Basic"/>
+                        <ComboBoxItem Content="Microsoft 365 Business Standard"/>
+                        <ComboBoxItem Content="Microsoft 365 Business Premium"/>
+                        <ComboBoxItem Content="Office 365 E3"/>
+                        <ComboBoxItem Content="Office 365 E5"/>
+                    </ComboBox>
+                </StackPanel>
+            </CheckBox>
             
-            &lt;CheckBox x:Name="chkDryRun" Style="{StaticResource ModernCheckBox}" 
+            <CheckBox x:Name="chkDryRun" Style="{StaticResource ModernCheckBox}" 
                      Content="Dry Run (preview only - don't create users)" IsChecked="True"
-                     Foreground="&#35;FFFFA500"/&gt;
-        &lt;/StackPanel&gt;
-    &lt;/Border&gt;
+                     Foreground="#FFFFA500"/>
+        </StackPanel>
+    </Border>
     
-    &lt;Border Grid.Row="2" Style="{StaticResource CardBorder}"&gt;
-        &lt;Grid&gt;
-            &lt;Grid.RowDefinitions&gt;
-                &lt;RowDefinition Height="Auto"/&gt;
-                &lt;RowDefinition Height="*"/&gt;
-            &lt;/Grid.RowDefinitions&gt;
+    <Border Grid.Row="2" Style="{StaticResource CardBorder}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
             
-            &lt;TextBlock Grid.Row="0" Text="3. Preview &amp; Import" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/&gt;
+            <TextBlock Grid.Row="0" Text="3. Preview &amp; Import" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
             
-            &lt;DataGrid x:Name="dgPreview" Grid.Row="1" AutoGenerateColumns="True" IsReadOnly="True"
+            <DataGrid x:Name="dgPreview" Grid.Row="1" AutoGenerateColumns="True" IsReadOnly="True"
                      GridLinesVisibility="Horizontal" Background="Transparent"
-                     RowBackground="&#35;FF2D2D30" AlternatingRowBackground="&#35;FF252526"
-                     Foreground="White" BorderThickness="0" HeadersVisibility="Column"/&gt;
-        &lt;/Grid&gt;
-    &lt;/Border&gt;
+                     RowBackground="#FF2D2D30" AlternatingRowBackground="#FF252526"
+                     Foreground="White" BorderThickness="0" HeadersVisibility="Column"/>
+        </Grid>
+    </Border>
     
-    &lt;StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0"&gt;
-        &lt;Button x:Name="btnPreview" Style="{StaticResource ModernButton}" Content="👁️ Preview Data" Margin="0,0,10,0"/&gt;
-        &lt;Button x:Name="btnImport" Style="{StaticResource ModernButton}" Content="🚀 Import Users" Background="&#35;FF107C10"/&gt;
-    &lt;/StackPanel&gt;
-&lt;/Grid&gt;
+    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+        <Button x:Name="btnPreview" Style="{StaticResource ModernButton}" Content="👁️ Preview Data" Margin="0,0,10,0"/>
+        <Button x:Name="btnImport" Style="{StaticResource ModernButton}" Content="🚀 Import Users" Background="#FF107C10"/>
+    </StackPanel>
+</Grid>
 "@
     
     $reader = New-Object System.Xml.XmlNodeReader $bulkXaml

@@ -53,245 +53,245 @@ $script:CurrentTab = "Dashboard"
 
 #region XAML UI Definition
 [xml]$XAML = @"
-&lt;Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="M365 Tenant Manager" Height="800" Width="1200"
         WindowStartupLocation="CenterScreen"
-        Background="&#35;FF1E1E1E"
+        Background="#FF1E1E1E"
         Foreground="White"
         FontFamily="Segoe UI"
-        MinWidth="1000" MinHeight="700"&gt;
+        MinWidth="1000" MinHeight="700">
     
-    &lt;Window.Resources&gt;
-        &lt;Style x:Key="ModernButton" TargetType="Button"&gt;
-            &lt;Setter Property="Background" Value="&#35;FF0078D4"/&gt;
-            &lt;Setter Property="Foreground" Value="White"/&gt;
-            &lt;Setter Property="BorderThickness" Value="0"/&gt;
-            &lt;Setter Property="Padding" Value="15,8"/&gt;
-            &lt;Setter Property="FontSize" Value="13"/&gt;
-            &lt;Setter Property="Cursor" Value="Hand"/&gt;
-            &lt;Setter Property="Template"&gt;
-                &lt;Setter.Value&gt;
-                    &lt;ControlTemplate TargetType="Button"&gt;
-                        &lt;Border Background="{TemplateBinding Background}" 
+    <Window.Resources>
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Background" Value="#FF0078D4"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
                                 CornerRadius="4" 
-                                BorderThickness="0"&gt;
-                            &lt;ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/&gt;
-                        &lt;/Border&gt;
-                    &lt;/ControlTemplate&gt;
-                &lt;/Setter.Value&gt;
-            &lt;/Setter&gt;
-            &lt;Style.Triggers&gt;
-                &lt;Trigger Property="IsMouseOver" Value="True"&gt;
-                    &lt;Setter Property="Background" Value="&#35;FF106EBE"/&gt;
-                &lt;/Trigger&gt;
-                &lt;Trigger Property="IsEnabled" Value="False"&gt;
-                    &lt;Setter Property="Background" Value="&#35;FF6C6C6C"/&gt;
-                &lt;/Trigger&gt;
-            &lt;/Style.Triggers&gt;
-        &lt;/Style&gt;
+                                BorderThickness="0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FF106EBE"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="#FF6C6C6C"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
         
-        &lt;Style x:Key="NavButton" TargetType="Button"&gt;
-            &lt;Setter Property="Background" Value="Transparent"/&gt;
-            &lt;Setter Property="Foreground" Value="&#35;FFCCCCCC"/&gt;
-            &lt;Setter Property="BorderThickness" Value="0"/&gt;
-            &lt;Setter Property="Padding" Value="15,12"/&gt;
-            &lt;Setter Property="FontSize" Value="14"/&gt;
-            &lt;Setter Property="HorizontalContentAlignment" Value="Left"/&gt;
-            &lt;Setter Property="Template"&gt;
-                &lt;Setter.Value&gt;
-                    &lt;ControlTemplate TargetType="Button"&gt;
-                        &lt;Border Background="{TemplateBinding Background}" 
+        <Style x:Key="NavButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#FFCCCCCC"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="15,12"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
                                 BorderThickness="4,0,0,0"
-                                BorderBrush="Transparent"&gt;
-                            &lt;ContentPresenter Margin="10,0,0,0" 
-                                            VerticalAlignment="Center"/&gt;
-                        &lt;/Border&gt;
-                    &lt;/ControlTemplate&gt;
-                &lt;/Setter.Value&gt;
-            &lt;/Setter&gt;
-            &lt;Style.Triggers&gt;
-                &lt;Trigger Property="IsMouseOver" Value="True"&gt;
-                    &lt;Setter Property="Background" Value="&#35;FF2D2D2D"/&gt;
-                    &lt;Setter Property="Foreground" Value="White"/&gt;
-                &lt;/Trigger&gt;
-            &lt;/Style.Triggers&gt;
-        &lt;/Style&gt;
+                                BorderBrush="Transparent">
+                            <ContentPresenter Margin="10,0,0,0" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FF2D2D2D"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
         
-        &lt;Style x:Key="CardBorder" TargetType="Border"&gt;
-            &lt;Setter Property="Background" Value="&#35;FF252526"/&gt;
-            &lt;Setter Property="BorderBrush" Value="&#35;FF3E3E42"/&gt;
-            &lt;Setter Property="BorderThickness" Value="1"/&gt;
-            &lt;Setter Property="CornerRadius" Value="8"/&gt;
-            &lt;Setter Property="Padding" Value="20"/&gt;
-            &lt;Setter Property="Margin" Value="0,0,0,15"/&gt;
-        &lt;/Style&gt;
+        <Style x:Key="CardBorder" TargetType="Border">
+            <Setter Property="Background" Value="#FF252526"/>
+            <Setter Property="BorderBrush" Value="#FF3E3E42"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+        </Style>
         
-        &lt;Style x:Key="ModernTextBox" TargetType="TextBox"&gt;
-            &lt;Setter Property="Background" Value="&#35;FF3C3C3C"/&gt;
-            &lt;Setter Property="Foreground" Value="White"/&gt;
-            &lt;Setter Property="BorderBrush" Value="&#35;FF555555"/&gt;
-            &lt;Setter Property="BorderThickness" Value="1"/&gt;
-            &lt;Setter Property="Padding" Value="10,8"/&gt;
-            &lt;Setter Property="FontSize" Value="13"/&gt;
-        &lt;/Style&gt;
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#FF3C3C3C"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#FF555555"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
         
-        &lt;Style x:Key="ModernComboBox" TargetType="ComboBox"&gt;
-            &lt;Setter Property="Background" Value="&#35;FF3C3C3C"/&gt;
-            &lt;Setter Property="Foreground" Value="Black"/&gt;
-            &lt;Setter Property="BorderBrush" Value="&#35;FF555555"/&gt;
-            &lt;Setter Property="Padding" Value="10,8"/&gt;
-            &lt;Setter Property="FontSize" Value="13"/&gt;
-        &lt;/Style&gt;
+        <Style x:Key="ModernComboBox" TargetType="ComboBox">
+            <Setter Property="Background" Value="#FF3C3C3C"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="BorderBrush" Value="#FF555555"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
         
-        &lt;Style x:Key="ModernCheckBox" TargetType="CheckBox"&gt;
-            &lt;Setter Property="Foreground" Value="White"/&gt;
-            &lt;Setter Property="FontSize" Value="13"/&gt;
-            &lt;Setter Property="Margin" Value="0,5"/&gt;
-        &lt;/Style&gt;
-    &lt;/Window.Resources&gt;
+        <Style x:Key="ModernCheckBox" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="0,5"/>
+        </Style>
+    </Window.Resources>
     
-    &lt;Grid&gt;
-        &lt;Grid.ColumnDefinitions&gt;
-            &lt;ColumnDefinition Width="250"/&gt;
-            &lt;ColumnDefinition Width="*"/&gt;
-        &lt;/Grid.ColumnDefinitions&gt;
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
         
-        &lt;!-- Sidebar --&gt;
-        &lt;Border Grid.Column="0" Background="&#35;FF252526" BorderBrush="&#35;FF3E3E42" BorderThickness="0,0,1,0"&gt;
-            &lt;Grid&gt;
-                &lt;Grid.RowDefinitions&gt;
-                    &lt;RowDefinition Height="Auto"/&gt;
-                    &lt;RowDefinition Height="Auto"/&gt;
-                    &lt;RowDefinition Height="*"/&gt;
-                    &lt;RowDefinition Height="Auto"/&gt;
-                &lt;/Grid.RowDefinitions&gt;
+        <!-- Sidebar -->
+        <Border Grid.Column="0" Background="#FF252526" BorderBrush="#FF3E3E42" BorderThickness="0,0,1,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
                 
-                &lt;!-- Logo/Title --&gt;
-                &lt;Border Grid.Row="0" Padding="20,25"&gt;
-                    &lt;StackPanel&gt;
-                        &lt;TextBlock Text="M365" FontSize="28" FontWeight="Bold" Foreground="&#35;FF0078D4"/&gt;
-                        &lt;TextBlock Text="Tenant Manager" FontSize="14" Foreground="&#35;FFCCCCCC" Margin="0,2,0,0"/&gt;
-                    &lt;/StackPanel&gt;
-                &lt;/Border&gt;
+                <!-- Logo/Title -->
+                <Border Grid.Row="0" Padding="20,25">
+                    <StackPanel>
+                        <TextBlock Text="M365" FontSize="28" FontWeight="Bold" Foreground="#FF0078D4"/>
+                        <TextBlock Text="Tenant Manager" FontSize="14" Foreground="#FFCCCCCC" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Border>
                 
-                &lt;!-- Connection Status --&gt;
-                &lt;Border Grid.Row="1" Background="&#35;FF1E1E1E" Padding="15" Margin="10,0" CornerRadius="4"&gt;
-                    &lt;StackPanel&gt;
-                        &lt;TextBlock Text="Connection Status" FontSize="11" Foreground="&#35;FF858585" Margin="0,0,0,5"/&gt;
-                        &lt;StackPanel Orientation="Horizontal"&gt;
-                            &lt;Ellipse x:Name="statusIndicator" Width="10" Height="10" Fill="&#35;FFE81123" Margin="0,0,8,0"/&gt;
-                            &lt;TextBlock x:Name="statusText" Text="Disconnected" FontSize="12" Foreground="White"/&gt;
-                        &lt;/StackPanel&gt;
-                        &lt;TextBlock x:Name="statusAccount" Text="" FontSize="10" Foreground="&#35;FF858585" Margin="18,3,0,0" TextTrimming="CharacterEllipsis"/&gt;
-                    &lt;/StackPanel&gt;
-                &lt;/Border&gt;
+                <!-- Connection Status -->
+                <Border Grid.Row="1" Background="#FF1E1E1E" Padding="15" Margin="10,0" CornerRadius="4">
+                    <StackPanel>
+                        <TextBlock Text="Connection Status" FontSize="11" Foreground="#FF858585" Margin="0,0,0,5"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse x:Name="statusIndicator" Width="10" Height="10" Fill="#FFE81123" Margin="0,0,8,0"/>
+                            <TextBlock x:Name="statusText" Text="Disconnected" FontSize="12" Foreground="White"/>
+                        </StackPanel>
+                        <TextBlock x:Name="statusAccount" Text="" FontSize="10" Foreground="#FF858585" Margin="18,3,0,0" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                </Border>
                 
-                &lt;!-- Navigation --&gt;
-                &lt;StackPanel Grid.Row="2" Margin="0,20,0,0"&gt;
-                    &lt;Button x:Name="navDashboard" Style="{StaticResource NavButton}" Content="📊 Dashboard"/&gt;
-                    &lt;Button x:Name="navUsers" Style="{StaticResource NavButton}" Content="👤 User Management"/&gt;
-                    &lt;Button x:Name="navLicenses" Style="{StaticResource NavButton}" Content="🔑 Licenses"/&gt;
-                    &lt;Button x:Name="navGroups" Style="{StaticResource NavButton}" Content="👥 Groups"/&gt;
-                    &lt;Button x:Name="navReports" Style="{StaticResource NavButton}" Content="📈 Reports"/&gt;
-                    &lt;Button x:Name="navSettings" Style="{StaticResource NavButton}" Content="⚙️ Settings"/&gt;
-                &lt;/StackPanel&gt;
+                <!-- Navigation -->
+                <StackPanel Grid.Row="2" Margin="0,20,0,0">
+                    <Button x:Name="navDashboard" Style="{StaticResource NavButton}" Content="📊 Dashboard"/>
+                    <Button x:Name="navUsers" Style="{StaticResource NavButton}" Content="👤 User Management"/>
+                    <Button x:Name="navLicenses" Style="{StaticResource NavButton}" Content="🔑 Licenses"/>
+                    <Button x:Name="navGroups" Style="{StaticResource NavButton}" Content="👥 Groups"/>
+                    <Button x:Name="navReports" Style="{StaticResource NavButton}" Content="📈 Reports"/>
+                    <Button x:Name="navSettings" Style="{StaticResource NavButton}" Content="⚙️ Settings"/>
+                </StackPanel>
                 
-                &lt;!-- Version --&gt;
-                &lt;TextBlock Grid.Row="3" Text="v1.0.0" FontSize="11" Foreground="&#35;FF666666" 
-                          HorizontalAlignment="Center" Margin="0,15"/&gt;
-            &lt;/Grid&gt;
-        &lt;/Border&gt;
+                <!-- Version -->
+                <TextBlock Grid.Row="3" Text="v1.0.0" FontSize="11" Foreground="#FF666666" 
+                          HorizontalAlignment="Center" Margin="0,15"/>
+            </Grid>
+        </Border>
         
-        &lt;!-- Main Content --&gt;
-        &lt;Grid Grid.Column="1" Background="&#35;FF1E1E1E"&gt;
-            &lt;Grid.RowDefinitions&gt;
-                &lt;RowDefinition Height="Auto"/&gt;
-                &lt;RowDefinition Height="*"/&gt;
-            &lt;/Grid.RowDefinitions&gt;
+        <!-- Main Content -->
+        <Grid Grid.Column="1" Background="#FF1E1E1E">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
             
-            &lt;!-- Header --&gt;
-            &lt;Border Grid.Row="0" Background="&#35;FF252526" BorderBrush="&#35;FF3E3E42" BorderThickness="0,0,0,1" Padding="25,20"&gt;
-                &lt;Grid&gt;
-                    &lt;Grid.ColumnDefinitions&gt;
-                        &lt;ColumnDefinition Width="*"/&gt;
-                        &lt;ColumnDefinition Width="Auto"/&gt;
-                    &lt;/Grid.ColumnDefinitions&gt;
-                    &lt;TextBlock x:Name="pageTitle" Grid.Column="0" Text="Dashboard" FontSize="24" FontWeight="SemiBold" Foreground="White"/&gt;
-                    &lt;Button x:Name="btnConnect" Grid.Column="1" Style="{StaticResource ModernButton}" 
-                           Content="Connect to M365" Padding="20,10"/&gt;
-                &lt;/Grid&gt;
-            &lt;/Border&gt;
+            <!-- Header -->
+            <Border Grid.Row="0" Background="#FF252526" BorderBrush="#FF3E3E42" BorderThickness="0,0,0,1" Padding="25,20">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="pageTitle" Grid.Column="0" Text="Dashboard" FontSize="24" FontWeight="SemiBold" Foreground="White"/>
+                    <Button x:Name="btnConnect" Grid.Column="1" Style="{StaticResource ModernButton}" 
+                           Content="Connect to M365" Padding="20,10"/>
+                </Grid>
+            </Border>
             
-            &lt;!-- Content Area --&gt;
-            &lt;ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"&gt;
-                &lt;ContentControl x:Name="contentArea" Margin="25"&gt;
+            <!-- Content Area -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <ContentControl x:Name="contentArea" Margin="25">
                     
-                    &lt;!-- Dashboard View (Default) --&gt;
-                    &lt;Grid x:Name="viewDashboard"&gt;
-                        &lt;Grid.RowDefinitions&gt;
-                            &lt;RowDefinition Height="Auto"/&gt;
-                            &lt;RowDefinition Height="Auto"/&gt;
-                        &lt;/Grid.RowDefinitions&gt;
+                    <!-- Dashboard View (Default) -->
+                    <Grid x:Name="viewDashboard">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
                         
-                        &lt;!-- Stats Cards --&gt;
-                        &lt;UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,20"&gt;
-                            &lt;Border Style="{StaticResource CardBorder}"&gt;
-                                &lt;StackPanel&gt;
-                                    &lt;TextBlock Text="👤" FontSize="24" Margin="0,0,0,10"/&gt;
-                                    &lt;TextBlock x:Name="statTotalUsers" Text="-" FontSize="32" FontWeight="Bold" Foreground="White"/&gt;
-                                    &lt;TextBlock Text="Total Users" FontSize="12" Foreground="&#35;FF858585" Margin="0,5,0,0"/&gt;
-                                &lt;/StackPanel&gt;
-                            &lt;/Border&gt;
+                        <!-- Stats Cards -->
+                        <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,20">
+                            <Border Style="{StaticResource CardBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="👤" FontSize="24" Margin="0,0,0,10"/>
+                                    <TextBlock x:Name="statTotalUsers" Text="-" FontSize="32" FontWeight="Bold" Foreground="White"/>
+                                    <TextBlock Text="Total Users" FontSize="12" Foreground="#FF858585" Margin="0,5,0,0"/>
+                                </StackPanel>
+                            </Border>
                             
-                            &lt;Border Style="{StaticResource CardBorder}"&gt;
-                                &lt;StackPanel&gt;
-                                    &lt;TextBlock Text="✅" FontSize="24" Margin="0,0,0,10"/&gt;
-                                    &lt;TextBlock x:Name="statActiveUsers" Text="-" FontSize="32" FontWeight="Bold" Foreground="&#35;FF107C10"/&gt;
-                                    &lt;TextBlock Text="Active Users" FontSize="12" Foreground="&#35;FF858585" Margin="0,5,0,0"/&gt;
-                                &lt;/StackPanel&gt;
-                            &lt;/Border&gt;
+                            <Border Style="{StaticResource CardBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="✅" FontSize="24" Margin="0,0,0,10"/>
+                                    <TextBlock x:Name="statActiveUsers" Text="-" FontSize="32" FontWeight="Bold" Foreground="#FF107C10"/>
+                                    <TextBlock Text="Active Users" FontSize="12" Foreground="#FF858585" Margin="0,5,0,0"/>
+                                </StackPanel>
+                            </Border>
                             
-                            &lt;Border Style="{StaticResource CardBorder}"&gt;
-                                &lt;StackPanel&gt;
-                                    &lt;TextBlock Text="🔑" FontSize="24" Margin="0,0,0,10"/&gt;
-                                    &lt;TextBlock x:Name="statLicenses" Text="-" FontSize="32" FontWeight="Bold" Foreground="&#35;FFFFA500"/&gt;
-                                    &lt;TextBlock Text="Licenses Used" FontSize="12" Foreground="&#35;FF858585" Margin="0,5,0,0"/&gt;
-                                &lt;/StackPanel&gt;
-                            &lt;/Border&gt;
+                            <Border Style="{StaticResource CardBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="🔑" FontSize="24" Margin="0,0,0,10"/>
+                                    <TextBlock x:Name="statLicenses" Text="-" FontSize="32" FontWeight="Bold" Foreground="#FFFFA500"/>
+                                    <TextBlock Text="Licenses Used" FontSize="12" Foreground="#FF858585" Margin="0,5,0,0"/>
+                                </StackPanel>
+                            </Border>
                             
-                            &lt;Border Style="{StaticResource CardBorder}"&gt;
-                                &lt;StackPanel&gt;
-                                    &lt;TextBlock Text="👥" FontSize="24" Margin="0,0,0,10"/&gt;
-                                    &lt;TextBlock x:Name="statGroups" Text="-" FontSize="32" FontWeight="Bold" Foreground="&#35;FF0078D4"/&gt;
-                                    &lt;TextBlock Text="Groups" FontSize="12" Foreground="&#35;FF858585" Margin="0,5,0,0"/&gt;
-                                &lt;/StackPanel&gt;
-                            &lt;/Border&gt;
-                        &lt;/UniformGrid&gt;
+                            <Border Style="{StaticResource CardBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="👥" FontSize="24" Margin="0,0,0,10"/>
+                                    <TextBlock x:Name="statGroups" Text="-" FontSize="32" FontWeight="Bold" Foreground="#FF0078D4"/>
+                                    <TextBlock Text="Groups" FontSize="12" Foreground="#FF858585" Margin="0,5,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
                         
-                        &lt;!-- Quick Actions --&gt;
-                        &lt;Border Grid.Row="1" Style="{StaticResource CardBorder}"&gt;
-                            &lt;StackPanel&gt;
-                                &lt;TextBlock Text="Quick Actions" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,20"/&gt;
-                                &lt;WrapPanel&gt;
-                                    &lt;Button x:Name="btnQuickBulkImport" Style="{StaticResource ModernButton}" 
-                                           Content="📊 Bulk Import Users" Margin="0,0,10,10" Width="180"/&gt;
-                                    &lt;Button x:Name="btnQuickCreateUser" Style="{StaticResource ModernButton}" 
-                                           Content="➕ Create Single User" Margin="0,0,10,10" Width="180"/&gt;
-                                    &lt;Button x:Name="btnQuickAssignLicense" Style="{StaticResource ModernButton}" 
-                                           Content="🔑 Assign Licenses" Margin="0,0,10,10" Width="180"/&gt;
-                                    &lt;Button x:Name="btnQuickExport" Style="{StaticResource ModernButton}" 
-                                           Content="📤 Export Users" Margin="0,0,10,10" Width="180"/&gt;
-                                &lt;/WrapPanel&gt;
-                            &lt;/StackPanel&gt;
-                        &lt;/Border&gt;
-                    &lt;/Grid&gt;
+                        <!-- Quick Actions -->
+                        <Border Grid.Row="1" Style="{StaticResource CardBorder}">
+                            <StackPanel>
+                                <TextBlock Text="Quick Actions" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,20"/>
+                                <WrapPanel>
+                                    <Button x:Name="btnQuickBulkImport" Style="{StaticResource ModernButton}" 
+                                           Content="📊 Bulk Import Users" Margin="0,0,10,10" Width="180"/>
+                                    <Button x:Name="btnQuickCreateUser" Style="{StaticResource ModernButton}" 
+                                           Content="➕ Create Single User" Margin="0,0,10,10" Width="180"/>
+                                    <Button x:Name="btnQuickAssignLicense" Style="{StaticResource ModernButton}" 
+                                           Content="🔑 Assign Licenses" Margin="0,0,10,10" Width="180"/>
+                                    <Button x:Name="btnQuickExport" Style="{StaticResource ModernButton}" 
+                                           Content="📤 Export Users" Margin="0,0,10,10" Width="180"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
                     
-                &lt;/ContentControl&gt;
-            &lt;/ScrollViewer&gt;
-        &lt;/Grid&gt;
-    &lt;/Grid&gt;
-&lt;/Window&gt;
+                </ContentControl>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</Window>
 "@
 #endregion
 
