@@ -228,9 +228,10 @@ function Show-BulkImportView {
         
         # Confirm
         $mode = if ($dryRun) { "DRY RUN" } else { "LIVE IMPORT" }
+        $icon = if ($dryRun) { "Information" } else { "Warning" }
         $confirm = [System.Windows.MessageBox]::Show(
             "About to import $($script:importData.Count) user(s).`n`nMode: $mode`n`nContinue?",
-            "Confirm Import", "YesNo", if ($dryRun) { "Information" } else { "Warning" })
+            "Confirm Import", "YesNo", $icon)
         
         if ($confirm -ne "Yes") { return }
         
