@@ -1,0 +1,4 @@
+DisplayName,UserPrincipalName,MailNickname,GivenName,Surname,JobTitle,Department,OfficeLocation,MobilePhone,BusinessPhones,StreetAddress,City,State,PostalCode,Country,UsageLocation,Password,Groups
+John Doe,john.doe@company.com,johndoe,John,Doe,IT Administrator,IT,Amsterdam,+31-6-12345678,+31-20-1234567,Hoofdstraat 123,Amsterdam,Noord-Holland,1000 AA,Nederland,NL,Welcome2024!,"IT Team;All Employees"
+Jane Smith,jane.smith@company.com,janesmith,Jane,Smith,HR Manager,HR,Rotterdam,+31-6-87654321,+31-10-7654321,Stationplein 45,Rotterdam,Zuid-Holland,3013 AK,Nederland,NL,Welcome2024!,"HR Team;All Employees"
+Bob Wilson,bob.wilson@company.com,bobwilson,Bob,Wilson,Sales Representative,Sales,Den Haag,+31-6-11223344,+31-70-1234567,Kerkstraat 8,Den Haag,Zuid-Holland,2513 BA,Nederland,NL,Welcome2024!,"Sales Team;All Employees"

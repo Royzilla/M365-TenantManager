@@ -1,0 +1,6 @@
+*.xlsx
+*.xls
+template.xlsx
+*.log
+Export-*.xlsx
+*.tmp
