@@ -165,9 +165,6 @@ Add-Type -AssemblyName System.Windows.Forms
                         </ComboBox>
                     </StackPanel>
                 </CheckBox>
-                
-                <CheckBox x:Name="chkDryRun" Style="{StaticResource ModernCheckBox}" 
-                         Content="Dry Run (preview only - don't create users)" IsChecked="True" Foreground="#FFFFA500"/>
             </StackPanel>
         </Border>
         
@@ -392,7 +389,7 @@ Errors: $errorCount
 }
 
 function Import-UsersFromExcel {
-    param($Ui, [bool]$DryRun, [bool]$ValidateFirst)
+    param($Ui, [bool]$ValidateFirst)
     
     if (-not $script:Connected) {
         [System.Windows.MessageBox]::Show("Please connect to Microsoft 365 first.", "Not Connected", "OK", "Warning")
@@ -419,12 +416,9 @@ function Import-UsersFromExcel {
     $assignLicense = $Ui.ChkAssignLicense.IsChecked
     $selectedLicense = $Ui.CmbLicense.SelectedItem
     
-    $mode = if ($DryRun) { "DRY RUN" } else { "LIVE IMPORT" }
-    $icon = if ($DryRun) { "Information" } else { "Warning" }
-    
     $confirm = [System.Windows.MessageBox]::Show(
-        "About to import $($script:ImportData.Count) user(s).`n`nMode: $mode`n`nContinue?",
-        "Confirm Import", "YesNo", $icon)
+        "About to import $($script:ImportData.Count) user(s).`n`nContinue?",
+        "Confirm Import", "YesNo", "Warning")
     
     if ($confirm -ne "Yes") { return }
     
@@ -448,42 +442,34 @@ function Import-UsersFromExcel {
         try {
             $Ui.TxtProgress.Text = "Processing $($successCount + $failCount + 1) of $($script:ImportData.Count)"
             
-            if ($DryRun) {
-                $msg = "[DRY RUN] Would create: $($user.DisplayName) ($($user.UserPrincipalName))"
-                $results += $msg
-                $logEntry.Status = "DRY_RUN"
-                $logEntry.Message = $msg
-                $successCount++
+            $passwordProfile = @{
+                Password = $user.Password
+                ForceChangePasswordNextSignIn = $forcePasswordChange
             }
-            else {
-                $passwordProfile = @{
-                    Password = $user.Password
-                    ForceChangePasswordNextSignIn = $forcePasswordChange
-                }
-                
-                $userParams = @{
-                    DisplayName = $user.DisplayName
-                    UserPrincipalName = $user.UserPrincipalName
-                    MailNickname = $user.MailNickname
-                    AccountEnabled = $true
-                    PasswordProfile = $passwordProfile
-                }
-                
-                if ($user.GivenName) { $userParams.GivenName = $user.GivenName }
-                if ($user.Surname) { $userParams.Surname = $user.Surname }
-                if ($user.JobTitle) { $userParams.JobTitle = $user.JobTitle }
-                if ($user.Department) { $userParams.Department = $user.Department }
-                if ($user.OfficeLocation) { $userParams.OfficeLocation = $user.OfficeLocation }
-                if ($user.MobilePhone) { $userParams.MobilePhone = $user.MobilePhone }
-                if ($user.BusinessPhones) { $userParams.BusinessPhones = @($user.BusinessPhones) }
-                if ($user.StreetAddress) { $userParams.StreetAddress = $user.StreetAddress }
-                if ($user.City) { $userParams.City = $user.City }
-                if ($user.State) { $userParams.State = $user.State }
-                if ($user.PostalCode) { $userParams.PostalCode = $user.PostalCode }
-                if ($user.Country) { $userParams.Country = $user.Country }
-                if ($user.UsageLocation) { $userParams.UsageLocation = $user.UsageLocation }
-                
-                $newUser = New-MgUser @userParams
+            
+            $userParams = @{
+                DisplayName = $user.DisplayName
+                UserPrincipalName = $user.UserPrincipalName
+                MailNickname = $user.MailNickname
+                AccountEnabled = $true
+                PasswordProfile = $passwordProfile
+            }
+            
+            if ($user.GivenName) { $userParams.GivenName = $user.GivenName }
+            if ($user.Surname) { $userParams.Surname = $user.Surname }
+            if ($user.JobTitle) { $userParams.JobTitle = $user.JobTitle }
+            if ($user.Department) { $userParams.Department = $user.Department }
+            if ($user.OfficeLocation) { $userParams.OfficeLocation = $user.OfficeLocation }
+            if ($user.MobilePhone) { $userParams.MobilePhone = $user.MobilePhone }
+            if ($user.BusinessPhones) { $userParams.BusinessPhones = @($user.BusinessPhones) }
+            if ($user.StreetAddress) { $userParams.StreetAddress = $user.StreetAddress }
+            if ($user.City) { $userParams.City = $user.City }
+            if ($user.State) { $userParams.State = $user.State }
+            if ($user.PostalCode) { $userParams.PostalCode = $user.PostalCode }
+            if ($user.Country) { $userParams.Country = $user.Country }
+            if ($user.UsageLocation) { $userParams.UsageLocation = $user.UsageLocation }
+            
+            $newUser = New-MgUser @userParams
                 
                 if ($assignLicense -and $selectedLicense) {
                     $skuPartNumber = switch ($selectedLicense.Content) {
@@ -520,7 +506,6 @@ function Import-UsersFromExcel {
                 $logEntry.Status = "SUCCESS"
                 $logEntry.Message = $msg
                 $successCount++
-            }
         }
         catch {
             $msg = "FAILED: $($user.DisplayName) - $($_.Exception.Message)"
@@ -623,7 +608,6 @@ $Ui = @{
     ChkForcePasswordChange = $Window.FindName("chkForcePasswordChange")
     ChkAssignLicense = $Window.FindName("chkAssignLicense")
     CmbLicense = $Window.FindName("cmbLicense")
-    ChkDryRun = $Window.FindName("chkDryRun")
     TxtResults = $Window.FindName("txtResults")
     BtnSaveLog = $Window.FindName("btnSaveLog")
     BtnExportResults = $Window.FindName("btnExportResults")
@@ -686,7 +670,7 @@ $Ui.BtnPreview.Add_Click({
 })
 
 $Ui.BtnImport.Add_Click({
-    Import-UsersFromExcel -Ui $Ui -DryRun $Ui.ChkDryRun.IsChecked -ValidateFirst $Ui.ChkValidateData.IsChecked
+    Import-UsersFromExcel -Ui $Ui -ValidateFirst $Ui.ChkValidateData.IsChecked
 })
 
 $Ui.BtnSaveLog.Add_Click({

@@ -15,7 +15,6 @@ PowerShell GUI tool voor bulk importeren van gebruikers naar Microsoft 365 met u
 - 📊 **Excel import** — Importeer vanuit .xlsx bestanden
 - 🔑 **Automatische licentie toewijzing** — Microsoft 365 licenties toewijzen
 - 👥 **Groep membership** — Automatisch toevoegen aan Azure AD groepen
-- ✅ **Dry Run mode** — Test imports zonder wijzigingen
 - 📝 **Gedetailleerde logging** — Exporteer resultaten naar CSV
 
 ### UI Features
